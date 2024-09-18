@@ -16,7 +16,7 @@ def filter_and_write_to_excel(dataframe, description_list, excel_file_stream, da
     for index, row in filtered_df.iterrows():
         sheet['A'+str(ligne_excel)] = row["Time"]
         sheet['B'+str(ligne_excel)] = row["Description"]
-        sheet['C'+str(ligne_excel)] = row["Price (Gross)"]
+        sheet['C'+str(ligne_excel)] = row["Prix (TTC)"]
         ligne_excel += 1
     
     output_stream = BytesIO()
@@ -32,7 +32,7 @@ def sum_transaction(dataframe, description_list, excel_file_stream, date_JJ_MM):
     sheet = workbook[date_JJ_MM]
     total_index = 0
     for index, row in df.iterrows():
-        total = filtered_df[filtered_df['Description'] == row['Description']]['Price (Gross)'].sum()
+        total = filtered_df[filtered_df['Description'] == row['Description']]['Prix (TTC)'].sum()
         df.at[index, 'Total'] = total
         sheet['E'+str(index+2)] = row['Description']
         sheet['F'+str(index+2)] = total
