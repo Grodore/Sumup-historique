@@ -3,23 +3,28 @@ import pandas as pd
 import openpyxl
 from io import BytesIO
 
-# Vos fonctions existantes
+# Fonction pour filtrer les données et écrire dans un fichier Excel
 def filter_and_write_to_excel(dataframe, description_list, excel_file_stream, date_JJ_MM):
     workbook = openpyxl.load_workbook(excel_file_stream)
     sheet = workbook[date_JJ_MM]
     filtered_df = dataframe[dataframe['Description'].isin(description_list)]
+    
+    # Créer la colonne 'Time' à partir de la colonne 'Date'
+    filtered_df['Time'] = filtered_df['Date'].str.split(' ').str[-2:].str.join(' ')
+
     ligne_excel = 2
-    for index, sell in filtered_df.iterrows():
-        sheet['A'+str(ligne_excel)] = sell["Time"]
-        sheet['B'+str(ligne_excel)] = sell["Description"]
-        sheet['C'+str(ligne_excel)] = sell["Price (Gross)"]
+    for index, row in filtered_df.iterrows():
+        sheet['A'+str(ligne_excel)] = row["Time"]
+        sheet['B'+str(ligne_excel)] = row["Description"]
+        sheet['C'+str(ligne_excel)] = row["Price (Gross)"]
         ligne_excel += 1
-    # Enregistrer le fichier dans un BytesIO pour un téléchargement ultérieur
+    
     output_stream = BytesIO()
     workbook.save(output_stream)
     output_stream.seek(0)
     return output_stream
 
+# Fonction pour calculer et ajouter les totaux dans un fichier Excel
 def sum_transaction(dataframe, description_list, excel_file_stream, date_JJ_MM):
     filtered_df = dataframe[dataframe['Description'].isin(description_list)]
     df = pd.DataFrame({'Description': description_list, 'Total': 0})
@@ -27,9 +32,10 @@ def sum_transaction(dataframe, description_list, excel_file_stream, date_JJ_MM):
     sheet = workbook[date_JJ_MM]
     total_index = 0
     for index, row in df.iterrows():
-        df.loc[index, 'Total'] = filtered_df[filtered_df['Description'] == row['Description']]['Price (Gross)'].sum()
+        total = filtered_df[filtered_df['Description'] == row['Description']]['Price (Gross)'].sum()
+        df.at[index, 'Total'] = total
         sheet['E'+str(index+2)] = row['Description']
-        sheet['F'+str(index+2)] = df.loc[index, 'Total']
+        sheet['F'+str(index+2)] = total
         total_index += 1
     sheet['E'+str(total_index+2)] = "TOTAL"
     sheet['F'+str(total_index+2)] = df['Total'].sum()
@@ -53,6 +59,8 @@ date_JJ_MM = st.text_input("Entrez la date (JJ_MM) pour sélectionner la feuille
 if uploaded_file and template_excel_file and date_JJ_MM:
     # Lire les données du CSV
     df = pd.read_csv(uploaded_file)
+    # Création de la colonne 'Time'
+    df['Time'] = df['Date'].str.split(' ').str[-2:].str.join(' ')
 
     # Récupérer la liste unique des descriptions
     unique_descriptions = df['Description'].unique()
@@ -60,7 +68,7 @@ if uploaded_file and template_excel_file and date_JJ_MM:
     # Afficher les checkboxes pour chaque description unique
     st.header("Sélectionnez les descriptions à inclure")
     selected_descriptions = [desc for desc in unique_descriptions if st.checkbox(desc)]
-    
+
     if st.button("Appliquer les filtres et télécharger le fichier Excel"):
         if selected_descriptions:
             # Sauvegarde le fichier Excel mis à jour
