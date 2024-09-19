@@ -10,7 +10,7 @@ def filter_and_write_to_excel(dataframe, description_list, excel_file_stream, da
     filtered_df = dataframe[dataframe['Description'].isin(description_list)]
     
     # Créer la colonne 'Time' à partir de la colonne 'Date'
-    filtered_df['Time'] = filtered_df['Date'].str.split(' ').str[-2:].str.join(' ')
+    filtered_df['Time'] = filtered_df['Date'].str.split(' ').str[-1:].str.join(' ')
 
     ligne_excel = 2
     for index, row in filtered_df.iterrows():
