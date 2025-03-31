@@ -202,7 +202,6 @@ with st.sidebar:
         st.info('Veuillez charger un fichier de ventes',icon='⚠️')
         st.stop()
     st.header('Filtres')
-    st.write(sales_data)
     data = data_cleaning(sales_data)
 
 
