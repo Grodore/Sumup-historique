@@ -9,7 +9,7 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 # Configure la locale pour le formatage
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+locale.setlocale(locale.LC_ALL, '')
 
 # Convertit une colonne en float après avoir nettoyé les caractères non numériques
 def column_to_float(dataframe, column):
