@@ -158,7 +158,7 @@ def to_excel(displayed_global, totaux, total, glass_total, bottle_total):
         sheet.add_table(table_totaux)
 
         # Ajouter les KPI
-        kpi_data = pd.DataFrame({'KPI': ['Montant total', 'Verres vendus', 'Bouteilles vendues'], 'Valeur': [total, glass_total, bottle_total]})
+        kpi_data = pd.DataFrame({'KPI': ['Verres vendus', 'Bouteilles vendues'], 'Quantité': [glass_total, bottle_total]})
         start_row_kpi = 1
         start_col_kpi = 12
         for r_idx, row in enumerate(dataframe_to_rows(kpi_data, index=False, header=True), start=start_row_kpi):
@@ -172,15 +172,26 @@ def to_excel(displayed_global, totaux, total, glass_total, bottle_total):
                     if r_idx % 2 == 0:  # Lignes paires
                         cell.fill = row_fill_gray
                     cell.alignment = alignment
-                # Appliquer le format monétaire natif pour la colonne "Valeur"
-                if c_idx == 13:  # Colonne "Valeur"
-                    cell.number_format = '_-* #,##0.00\ [$€-fr-FR]_-'
+                # Appliquer le format nombre pour la colonne "Quantité"
+                if c_idx == 13:  # Colonne "Quantité"
+                    cell.number_format = '0'
+                    cell.alignment = alignment
 
         # Créer un tableau formaté pour les KPIs
         table_kpi = Table(displayName="TableKPI", ref=f"L1:M{len(kpi_data) + 1}")
         style_kpi = TableStyleInfo(name="TableStyleMedium2", showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=False)
         table_kpi.tableStyleInfo = style_kpi
         sheet.add_table(table_kpi)
+
+        # Ajouter le total
+        total_label_cell = sheet.cell(row=len(kpi_data) + 3, column=12, value="Montant total")
+        total_label_cell.font = Font(bold=True, size=16)
+        total_label_cell.alignment = Alignment(horizontal="left", vertical="center")
+
+        total_value_cell = sheet.cell(row=len(kpi_data) + 3, column=13, value=total)
+        total_value_cell.font = Font(bold=True, size=16)
+        total_value_cell.number_format = '_-* #,##0.00\ [$€-fr-FR]_-'
+        total_value_cell.alignment = Alignment(horizontal="right", vertical="center")
 
     excel_file.seek(0)
     return excel_file
