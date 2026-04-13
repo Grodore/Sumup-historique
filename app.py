@@ -11,12 +11,6 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 # Configure la locale pour le formatage
 locale.setlocale(locale.LC_ALL, '')
 
-# Convertit une colonne en float après avoir nettoyé les caractères non numériques
-#def column_to_float(dataframe, column):
-#    dataframe[column] = dataframe[column].astype(str).str.replace('€', '').str.replace(',', '.')
-#    dataframe[column] = dataframe[column].astype(float)
-#    return dataframe
-
 # Remplace les noms de mois français par leurs équivalents anglais
 def french_to_english(dataframe):
     month_dict = {
@@ -54,16 +48,7 @@ def glass_bottle_total(dataframe, glass_description_list, bottle_description_lis
     return totals_df, glass_total, bottle_total
 
 # Génère un tableau des totaux pour les descriptions sélectionnées
-#def generate_table_of_totals(dataframe, description_list):
-#    filtered_df = dataframe[dataframe['Description'].isin(description_list)]
-#    df = pd.DataFrame({'Description': description_list, 'Quantité': 0, 'Total (en €)': 0})
-#    for index, row in df.iterrows():
-#        quantity = filtered_df[filtered_df['Description'] == row['Description']]['Quantité'].sum()
-#        df.at[index, 'Quantité'] = quantity
-#        total = filtered_df[filtered_df['Description'] == row['Description']]['Prix (TTC)'].sum()
-#        df.at[index, 'Total (en €)'] = total
-#    global_total = df['Total (en €)'].sum().astype(float)
-#    return df, global_total
+
 def generate_table_of_totals(dataframe, description_list):
     filtered_df = dataframe[dataframe['Description'].isin(description_list)]
     df = pd.DataFrame({
@@ -94,13 +79,7 @@ def sales_by_half_hours(dataframe):
     return grouped_data[['Heure', 'Total (en €)']]
 
 # Nettoie les données en les formatant et en ajoutant des colonnes nécessaires
-#def data_cleaning(data):
-#    data = data[['Date', 'Quantité', 'Description', 'Prix (TTC)', 'Compte']]
-#    data = french_to_english(data)
-#    data['FullDate'] = pd.to_datetime(data['Date'], format='%d %b %Y %H:%M', dayfirst=True)
-#    data['Heure'] = data['FullDate'].dt.strftime('%H:%M')
-#    data['Date'] = data['FullDate'].dt.date
-#    return data
+
 def data_cleaning(data):
     data = data[['Date', 'Quantité', 'Description', 'Prix (TTC)', 'Compte']].copy()
     data = french_to_english(data)
@@ -123,11 +102,6 @@ def data_cleaning(data):
 
     return data
 # Formate les colonnes pour Excel en supprimant les décimales inutiles
-#def formating_for_excel(dataframe, column):
-#    dataframe[column] = dataframe[column].astype(str).str.replace('.00', '')
-#    dataframe[column] = dataframe[column].astype(float)
-#    dataframe['Quantité'] = dataframe['Quantité'].astype(int)
-#    return dataframe
 def formating_for_excel(dataframe, column):
     dataframe = dataframe.copy()
     dataframe['Quantité'] = dataframe['Quantité'].astype(int)
