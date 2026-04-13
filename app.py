@@ -66,8 +66,19 @@ def generate_table_of_totals(dataframe, description_list):
     return df, global_total
 
 # Formate une colonne pour l'affichage avec deux décimales
+#def display_data(dataframe, column):
+#    dataframe[column] = dataframe[column].astype(float).map('{:,.2f}'.format)
+#    return dataframe
 def display_data(dataframe, column):
-    dataframe[column] = dataframe[column].astype(float).map('{:,.2f}'.format)
+    dataframe = dataframe.copy()  # évite de modifier le df original
+    dataframe[column] = pd.to_numeric(
+        dataframe[column].astype(str)
+            .str.replace('€', '', regex=False)
+            .str.replace('\xa0', '', regex=False)
+            .str.replace(',', '.', regex=False)
+            .str.strip(),
+        errors='coerce'
+    ).map('{:,.2f} €'.format)
     return dataframe
 
 # Calcule les ventes par tranches de 30 minutes
