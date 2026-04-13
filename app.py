@@ -54,17 +54,30 @@ def glass_bottle_total(dataframe, glass_description_list, bottle_description_lis
     return totals_df, glass_total, bottle_total
 
 # Génère un tableau des totaux pour les descriptions sélectionnées
+#def generate_table_of_totals(dataframe, description_list):
+#    filtered_df = dataframe[dataframe['Description'].isin(description_list)]
+#    df = pd.DataFrame({'Description': description_list, 'Quantité': 0, 'Total (en €)': 0})
+#    for index, row in df.iterrows():
+#        quantity = filtered_df[filtered_df['Description'] == row['Description']]['Quantité'].sum()
+#        df.at[index, 'Quantité'] = quantity
+#        total = filtered_df[filtered_df['Description'] == row['Description']]['Prix (TTC)'].sum()
+#        df.at[index, 'Total (en €)'] = total
+#    global_total = df['Total (en €)'].sum().astype(float)
+#    return df, global_total
 def generate_table_of_totals(dataframe, description_list):
     filtered_df = dataframe[dataframe['Description'].isin(description_list)]
-    df = pd.DataFrame({'Description': description_list, 'Quantité': 0, 'Total (en €)': 0})
+    df = pd.DataFrame({
+        'Description': description_list,
+        'Quantité': 0,
+        'Total (en €)': 0.0  # ← float dès la création
+    })
     for index, row in df.iterrows():
         quantity = filtered_df[filtered_df['Description'] == row['Description']]['Quantité'].sum()
-        df.at[index, 'Quantité'] = quantity
+        df.at[index, 'Quantité'] = int(quantity)
         total = filtered_df[filtered_df['Description'] == row['Description']]['Prix (TTC)'].sum()
-        df.at[index, 'Total (en €)'] = total
-    global_total = df['Total (en €)'].sum().astype(float)
+        df.at[index, 'Total (en €)'] = float(total)  # ← cast explicite
+    global_total = float(df['Total (en €)'].sum())
     return df, global_total
-
 # Formate une colonne pour l'affichage avec deux décimales
 #def display_data(dataframe, column):
 #    dataframe[column] = dataframe[column].astype(float).map('{:,.2f}'.format)
