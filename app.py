@@ -12,10 +12,10 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 locale.setlocale(locale.LC_ALL, '')
 
 # Convertit une colonne en float après avoir nettoyé les caractères non numériques
-def column_to_float(dataframe, column):
-    dataframe[column] = dataframe[column].astype(str).str.replace('€', '').str.replace(',', '.')
-    dataframe[column] = dataframe[column].astype(float)
-    return dataframe
+#def column_to_float(dataframe, column):
+#    dataframe[column] = dataframe[column].astype(str).str.replace('€', '').str.replace(',', '.')
+#    dataframe[column] = dataframe[column].astype(float)
+#    return dataframe
 
 # Remplace les noms de mois français par leurs équivalents anglais
 def french_to_english(dataframe):
@@ -69,13 +69,13 @@ def generate_table_of_totals(dataframe, description_list):
     df = pd.DataFrame({
         'Description': description_list,
         'Quantité': 0,
-        'Total (en €)': 0.0  # ← float dès la création
+        'Total (en €)': 0.0
     })
     for index, row in df.iterrows():
         quantity = filtered_df[filtered_df['Description'] == row['Description']]['Quantité'].sum()
         df.at[index, 'Quantité'] = int(quantity)
         total = filtered_df[filtered_df['Description'] == row['Description']]['Prix (TTC)'].sum()
-        df.at[index, 'Total (en €)'] = float(total)  # ← cast explicite
+        df.at[index, 'Total (en €)'] = float(total)
     global_total = float(df['Total (en €)'].sum())
     return df, global_total
 # Formate une colonne pour l'affichage avec deux décimales
@@ -83,17 +83,9 @@ def generate_table_of_totals(dataframe, description_list):
 #    dataframe[column] = dataframe[column].astype(float).map('{:,.2f}'.format)
 #    return dataframe
 def display_data(dataframe, column):
-    dataframe = dataframe.copy()  # évite de modifier le df original
-    dataframe[column] = pd.to_numeric(
-        dataframe[column].astype(str)
-            .str.replace('€', '', regex=False)
-            .str.replace('\xa0', '', regex=False)
-            .str.replace(',', '.', regex=False)
-            .str.strip(),
-        errors='coerce'
-    ).map('{:,.2f} €'.format)
+    dataframe = dataframe.copy()
+    dataframe[column] = dataframe[column].map('{:,.2f} €'.format)
     return dataframe
-
 # Calcule les ventes par tranches de 30 minutes
 def sales_by_half_hours(dataframe):
     grouped_data = dataframe.groupby([pd.Grouper(key='FullDate', freq='30Min')])['Prix (TTC)'].sum().reset_index()
@@ -102,18 +94,42 @@ def sales_by_half_hours(dataframe):
     return grouped_data[['Heure', 'Total (en €)']]
 
 # Nettoie les données en les formatant et en ajoutant des colonnes nécessaires
+#def data_cleaning(data):
+#    data = data[['Date', 'Quantité', 'Description', 'Prix (TTC)', 'Compte']]
+#    data = french_to_english(data)
+#    data['FullDate'] = pd.to_datetime(data['Date'], format='%d %b %Y %H:%M', dayfirst=True)
+#    data['Heure'] = data['FullDate'].dt.strftime('%H:%M')
+#    data['Date'] = data['FullDate'].dt.date
+#    return data
 def data_cleaning(data):
-    data = data[['Date', 'Quantité', 'Description', 'Prix (TTC)', 'Compte']]
+    data = data[['Date', 'Quantité', 'Description', 'Prix (TTC)', 'Compte']].copy()
     data = french_to_english(data)
     data['FullDate'] = pd.to_datetime(data['Date'], format='%d %b %Y %H:%M', dayfirst=True)
     data['Heure'] = data['FullDate'].dt.strftime('%H:%M')
     data['Date'] = data['FullDate'].dt.date
-    return data
 
+    # Nettoyage numérique une bonne fois pour toutes
+    data['Prix (TTC)'] = (
+        data['Prix (TTC)']
+        .astype(str)
+        .str.replace('€', '', regex=False)
+        .str.replace('\xa0', '', regex=False)
+        .str.replace(' ', '', regex=False)
+        .str.replace(',', '.', regex=False)
+        .str.strip()
+    )
+    data['Prix (TTC)'] = pd.to_numeric(data['Prix (TTC)'], errors='coerce').fillna(0.0)
+    data['Quantité'] = pd.to_numeric(data['Quantité'], errors='coerce').fillna(0).astype(int)
+
+    return data
 # Formate les colonnes pour Excel en supprimant les décimales inutiles
+#def formating_for_excel(dataframe, column):
+#    dataframe[column] = dataframe[column].astype(str).str.replace('.00', '')
+#    dataframe[column] = dataframe[column].astype(float)
+#    dataframe['Quantité'] = dataframe['Quantité'].astype(int)
+#    return dataframe
 def formating_for_excel(dataframe, column):
-    dataframe[column] = dataframe[column].astype(str).str.replace('.00', '')
-    dataframe[column] = dataframe[column].astype(float)
+    dataframe = dataframe.copy()
     dataframe['Quantité'] = dataframe['Quantité'].astype(int)
     return dataframe
 
